@@ -18,6 +18,7 @@ import '../widgets/flutterMap.dart'; import 'package:latlong/latlong.dart';
 
 import 'package:flutter_gauge/flutter_gauge.dart';
 import 'package:flutter_thermometer/thermometer_widget.dart';
+import 'package:responsive_grid/responsive_grid.dart';
 
 import 'package:oscilloscope/oscilloscope.dart';
 
@@ -379,7 +380,7 @@ class RealTimeDataState extends State<RealTimeData> {
 
     //String distance = widget.currentSettings.settings.useImperial ? "${kmToMile(escTelemetry.tachometer_abs / 1000.0)} miles" : "${escTelemetry.tachometer_abs / 1000.0} km";
     double distanceTraveled = doublePrecision(escTelemetry.tachometer_abs / 1000.0, 2);
-    String distance = widget.currentSettings.settings.useImperial ? "${kmToMile(distanceTraveled)} miles" : "$distanceTraveled km";
+    String distance = widget.currentSettings.settings.useImperial ? "${kmToMile(distanceTraveled)} mi" : "$distanceTraveled km";
 
 
     double efficiencyKm = calculateEfficiencyKm(distanceTraveled);
@@ -387,16 +388,16 @@ class RealTimeDataState extends State<RealTimeData> {
     String efficiencyGaugeLabel = widget.currentSettings.settings.useImperial ? "Efficiency Wh/Mi" : "Efficiency Wh/Km";
     //String efficiency = widget.currentSettings.settings.useImperial ? "${kmToMile(efficiencyKm)} Wh/Mi" : "$efficiencyKm Wh/Km";
 
-    double powerMax = widget.currentSettings.settings.batterySeriesCount * widget.currentSettings.settings.batteryCellMaxVoltage;
-    double powerMinimum = widget.currentSettings.settings.batterySeriesCount * widget.currentSettings.settings.batteryCellMinVoltage;
+    double powerMax = widget.currentSettings.settings.batteryCellMaxVoltage;
+    double powerMinimum = widget.currentSettings.settings.batteryCellMinVoltage;
 
     if (widget.deviceIsConnected) {
-      averageVoltageInput ??= escTelemetry.v_in; // Set to current value if null
+      averageVoltageInput ??= escTelemetry.v_in / widget.currentSettings.settings.batterySeriesCount; // Set to current value if null
       if (averageVoltageInput == 0.0) { // Set to minimum if zero
         averageVoltageInput = powerMinimum;
       } else {
         // Smooth voltage input value from ESC
-        averageVoltageInput = (0.25 * doublePrecision(escTelemetry.v_in, 1)) + (0.75 * averageVoltageInput);
+        averageVoltageInput = (0.25 * doublePrecision(escTelemetry.v_in / widget.currentSettings.settings.batterySeriesCount, 1)) + (0.75 * averageVoltageInput);
       }
     } else {
       averageVoltageInput = 0; // Set to zero when disconnected
@@ -442,7 +443,8 @@ class RealTimeDataState extends State<RealTimeData> {
       yAxisMin: -25.0,
       dataSet: motorCurrentGraphPoints,
     );
-
+    TextStyle speedStyle = TextStyle(color: Colors.white, fontSize: 128, fontWeight: FontWeight.bold);
+    TextStyle minorStyle = TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold);
     //globalLogger.wtf(MediaQuery.of(context).size.height);
     //globalLogger.wtf(MediaQuery.of(context).size.width);
 
@@ -452,93 +454,79 @@ class RealTimeDataState extends State<RealTimeData> {
         child: ListView(
           padding: const EdgeInsets.all(10),
           children: <Widget>[
-
-            Row(children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Center(child:Text("Duty Cycle")),
-                  Container(width: doubleItemWidth, child: _gaugeDutyCycle)
-                ]),
-
-              Column(
-                  children: <Widget>[
-                    Center(child:Text("Speed")),
-                    Container(width: doubleItemWidth, child: _gaugeSpeed)
-                  ]),],),
-
-            Row(children: <Widget>[
-              Column(
-                  children: <Widget>[
-                    Center(child:Text("Power Remaining")),
-                    Container(width: doubleItemWidth, child: _gaugePowerRemaining)
-                  ]),
-
-              Column(
-                  children: <Widget>[
-                    Center(child:Text("Volts")),
-                    Container(width: doubleItemWidth, child: _gaugeVolts)
-                  ]),
-            ],),
-
-            Row(children: <Widget>[
-              Column(
-                  children: <Widget>[
-                    Center(child:Text(efficiencyGaugeLabel)),
-                    Container(width: doubleItemWidth, child: _gaugeEfficiency)
-                  ]),
-
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Center( child:Text("Motor Current")),
-                    Text("${doublePrecision(escTelemetry.current_motor, 2)}"),
-                    SizedBox(width: doubleItemWidth, height: doubleItemWidth - 30, child: scopeOne),
-                  ]),
-            ],),
-
-            Row(children: <Widget>[
-
-              Column(  children: <Widget>[
-                Center(child:Text("ESC")),
-                Text(temperatureMosfet),
-                SizedBox(
-                    height:doubleItemWidth * 0.75,
-                    width: doubleItemWidth,
-                    child: Thermometer(
-                      value: tempMosfet,
-                      minValue: 0,
-                      maxValue: widget.currentSettings.settings.useFahrenheit ? cToF(80) : 80,
-                      label: widget.currentSettings.settings.useFahrenheit ? ThermometerLabel.farenheit():ThermometerLabel.celsius(),
-                      scale: widget.currentSettings.settings.useFahrenheit ? IntervalScaleProvider(25) : IntervalScaleProvider(15),
-                      mercuryColor: Colors.pink,
-                      outlineColor: Theme.of(context).textTheme.bodyText1.color,
+            ResponsiveGridRow(
+              children: [
+                ResponsiveGridCol(lg: 6, md: 6, sm: 6, xs: 6,
+                    child: Container(
+                      alignment: Alignment(0, 0),
+                      child:
+                        Column(children: <Widget>[
+                          Column(children: <Widget>[
+                            Center(child:Text("Speed")),
+                            Container(child: Center(child: Text("${doublePrecision(speedNow, 0)}", style: speedStyle)))
+                          ]),
+                          Column(children: <Widget>[
+                            Center(child:Text("Duty Cycle")),
+                            Container(child: Center(child: Text("${doublePrecision(escTelemetry.duty_now * 100, 0)}" + '%', style: minorStyle)))
+                          ])
+                        ])
                     )
-                ),
-              ]),
 
-              Column( children: <Widget>[
-                Center(child:Text("Motor")),
-                Text(temperatureMotor),
-                SizedBox(
-                    height: doubleItemWidth * 0.75,
-                    width:doubleItemWidth,
-                    child: Thermometer(
-                      value: tempMotor,
-                      minValue: 0,
-                      maxValue: widget.currentSettings.settings.useFahrenheit ? cToF(90) : 90,
-                      label: widget.currentSettings.settings.useFahrenheit ? ThermometerLabel.farenheit():ThermometerLabel.celsius(),
-                      scale: widget.currentSettings.settings.useFahrenheit ? IntervalScaleProvider(25) : IntervalScaleProvider(15),
-                      mercuryColor: Colors.pink,
-                      outlineColor: Theme.of(context).textTheme.bodyText1.color,
+                ),
+
+                ResponsiveGridCol(lg: 3, md: 3,sm: 3, xs: 3,
+                  child: Container(
+                    alignment: Alignment(0, 0),
+                    child:
+                      Column(children: <Widget>[
+                        Column(children: <Widget>[
+                          Center(child:Text("Voltage")),
+                          // Container(width: doubleItemWidth, child: _gaugeVolts)
+                          Center(child: Text("${doublePrecision(averageVoltageInput, 2)}" + 'V', style: minorStyle))
+                        ]),
+                        Column(children: <Widget>[
+                          Center(child: Text("Battery")),
+                          // Container(width: doubleItemWidth, child: _gaugePowerRemaining)
+                          Center(child: Text("${doublePrecision(batteryRemaining, 0)}" + '%', style: minorStyle))
+                        ]),
+                        Column(children: <Widget>[
+                          Center(child: Text("M Current")),
+                          Text("${doublePrecision(escTelemetry.current_motor, 2)} A", style: minorStyle),
+                        ]),
+                        Column(children: <Widget>[
+                          Center(child: Text("B Current")),
+                          Center(child: Text(" ${doublePrecision(escTelemetry.current_in, 2)} A", style: minorStyle))
+                        ])
+                      ])
+                  )
+                ),
+                ResponsiveGridCol(lg: 3, md: 3,sm: 3, xs: 3,
+                    child: Container(
+                        alignment: Alignment(0, 0),
+                        child:
+                        Column(children: <Widget>[
+                          Column(children: <Widget>[
+                            Center(child:Text("Odometer")),
+                            // Container(width: doubleItemWidth, child: _gaugeVolts)
+                            Center(child: Text('$distance', style: minorStyle))
+                          ]),
+                          Column(children: <Widget>[
+                            Center(child: Text("Wh/Mi")),
+                            Center(child: Text("${doublePrecision(efficiencyGauge, 0)}", style: minorStyle))
+                          ]),
+                          Column(children: <Widget>[
+                            Center(child: Text("ESC Temp")),
+                            Text(temperatureMosfet, style: minorStyle),
+                          ]),
+                          Column(children: <Widget>[
+                            Center(child: Text("Motor Temp")),
+                            Center(child: Text(temperatureMotor, style: minorStyle))
+                          ])
+                        ])
                     )
-                ),
-              ]),
-
-            ],),
-
-
-
-            SizedBox(height: 10),
+                )
+              ]
+            ),
 
             Table(children: [
               TableRow(children: [
