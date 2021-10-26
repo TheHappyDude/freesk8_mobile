@@ -665,9 +665,9 @@ class MyHomeState extends State<MyHome> with SingleTickerProviderStateMixin {
       device.disconnect().catchError((e){
         globalLogger.e("_attemptDeviceConnection:: While catching exception, device.disconnect() threw an exception: $e");
       });
-      if (e.code != 'already_connected') {
-        throw e;
-      }
+      // if (e.code != 'already_connected') {
+      //   throw e;
+      // }
     }
   }
   //This builds a grid view of found BLE devices... works pretty ok
@@ -2863,21 +2863,21 @@ class MyHomeState extends State<MyHome> with SingleTickerProviderStateMixin {
 
     return Scaffold(
         // Appbar
-        appBar: AppBar(
-            title: Row(children: [
-              Text("FreeSK8 (v$freeSK8ApplicationVersion)"),
-              syncInProgress ? Icon(Icons.sync) : Container()
-            ],),
-            // Set the background color of the App Bar
-            backgroundColor: serverTCPSocket != null ? Colors.blueAccent : Theme.of(context).primaryColor,
-            // Set the bottom property of the Appbar to include a Tab Bar
-            //bottom: getTabBar()
-        ),
+        // appBar: AppBar(
+        //     title: Row(children: [
+        //       Text("FreeSK8 (v$freeSK8ApplicationVersion)"),
+        //       syncInProgress ? Icon(Icons.sync) : Container()
+        //     ],),
+        //     // Set the background color of the App Bar
+        //     backgroundColor: serverTCPSocket != null ? Colors.blueAccent : Theme.of(context).primaryColor,
+        //     // Set the bottom property of the Appbar to include a Tab Bar
+        //     //bottom: getTabBar()
+        // ),
         // Set the TabBar view as the body of the Scaffold
         body: LogConsoleOnShake(
           debugOnly: false,
           dark: true,
-          child: Center(
+          child: SafeArea(
             child: getTabBarView( <Widget>[
               ConnectionStatus(
                 active:_scanActive,
