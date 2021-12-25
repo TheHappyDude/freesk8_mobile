@@ -443,9 +443,9 @@ class RealTimeDataState extends State<RealTimeData> {
       yAxisMin: -25.0,
       dataSet: motorCurrentGraphPoints,
     );
-    TextStyle speedStyle = TextStyle(color: Colors.white, fontSize: 144, fontWeight: FontWeight.bold);
-    TextStyle medStyle = TextStyle(color: Colors.white, fontSize: 46, fontWeight: FontWeight.bold);
-    TextStyle minorStyle = TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold);
+    TextStyle speedStyle = TextStyle(fontFamily: 'Orbitron', color: Colors.white, fontSize: 148, fontWeight: FontWeight.bold);
+    TextStyle medStyle = TextStyle(fontFamily: 'Orbitron', color: Colors.white, fontSize: 44, fontWeight: FontWeight.bold);
+    TextStyle minorStyle = TextStyle(fontFamily: 'Orbitron', color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold);
     //globalLogger.wtf(MediaQuery.of(context).size.height);
     //globalLogger.wtf(MediaQuery.of(context).size.width);
 
@@ -463,25 +463,25 @@ class RealTimeDataState extends State<RealTimeData> {
                         Column(children: <Widget>[
                           Column(children: <Widget>[
                             Center(child:Text("Speed")),
-                            Container(child: Center(child: Text("${doublePrecision(speedNow, 0)}", style: speedStyle)))
+                            Container(child: Center(child: Text("${speedNow.round()}", style: speedStyle)))
                           ]),
                           ResponsiveGridRow(
                             children: [
-                              ResponsiveGridCol(lg: 4, md: 4, sm: 4, xs: 4,
-                                child: Container(
-                                  child:
-                                    Column(children: <Widget>[
-                                      Center(child:Text("Duty Cycle")),
-                                      Container(child: Center(child: Text("${doublePrecision(escTelemetry.duty_now * 100, 0)}" + '%', style: minorStyle)))
-                                    ])
-                                )
-                              ),
                               ResponsiveGridCol(lg: 4, md: 4, sm: 4, xs: 4,
                                   child: Container(
                                       child:
                                       Column(children: <Widget>[
                                         Center(child: Text("M Current")),
-                                        Text("${doublePrecision(escTelemetry.current_motor, 2)} A", style: minorStyle),
+                                        Text("${doublePrecision(escTelemetry.current_motor, 1)} A", style: minorStyle),
+                                      ])
+                                  )
+                              ),
+                              ResponsiveGridCol(lg: 4, md: 4, sm: 4, xs: 4,
+                                  child: Container(
+                                      child:
+                                      Column(children: <Widget>[
+                                        Center(child:Text("Duty Cycle")),
+                                        Container(child: Center(child: Text("${doublePrecision(escTelemetry.duty_now * 100, 0).round()}" + '%', style: minorStyle)))
                                       ])
                                   )
                               ),
@@ -490,7 +490,7 @@ class RealTimeDataState extends State<RealTimeData> {
                                       child:
                                       Column(children: <Widget>[
                                         Center(child: Text("B Current")),
-                                        Center(child: Text(" ${doublePrecision(escTelemetry.current_in, 2)} A", style: minorStyle))
+                                        Center(child: Text(" ${doublePrecision(escTelemetry.current_in, 1)} A", style: minorStyle))
                                       ])
                                   )
                               ),
